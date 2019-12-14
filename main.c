@@ -1,15 +1,12 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-long *parents;
-long *children;
-long relays_number;
 
-/* long propagate(long current_point, long previous_point, long *farthest_p)
+/* long propagate(long current_point, long previous_point, long *farthest_p, long *parents, long *children, long relays_number)
    returns maximum depth from the current point,
-   sets farthest point by use of a pointer, because in C I can return only one primitive type.
+   sets farthest point by use of a pointer, because in C I can return only one value of a primitive type.
    Alternatively I could make an array with two values (depth and farthest_point) and return the pointer to it...*/
-long propagate(long current_point, long previous_point, long *farthest_p) {
+long propagate(long current_point, long previous_point, long *farthest_p, long *parents, long *children, long relays_number) {
     long *current_children = NULL;
     current_children = (long*) malloc(relays_number*sizeof(long));
     long current_children_number=0;
@@ -30,7 +27,7 @@ long propagate(long current_point, long previous_point, long *farthest_p) {
     long farthest_point_from_this=current_point;
     for (long i = 0; i<current_children_number; i++){
             farthest_point_from_this=current_children[i];
-            long child_depth=propagate(current_children[i],current_point,&farthest_point_from_this);
+            long child_depth=propagate(current_children[i],current_point,&farthest_point_from_this, parents, children, relays_number);
             if (child_depth>=max_depth){
                 max_depth=child_depth+1;
                 *farthest_p=farthest_point_from_this;
@@ -64,12 +61,10 @@ int main (int argc, char* argv[]) {
 		printf("invalid line 1");
 		return 0;
     }
-    relays_number = atol(pch);
+    long relays_number = atol(pch);
     printf("relays_number: %ld", relays_number);
-    long parents_[relays_number];
-    long children_[relays_number];
-    parents=parents_;
-    children=children_;
+    long parents[relays_number];
+    long children[relays_number];
     long index = 0;
 	while(fgets(result_string, sizeof(result_string), file)) {
         pch = strtok(result_string, " ");
@@ -95,9 +90,9 @@ int main (int argc, char* argv[]) {
     //start from any point (for instance 0) and find the farthest point
     long farthest=parents[0];
     long *farthest_p=&farthest;
-    propagate(parents[0], -1, farthest_p);
+    propagate(parents[0], -1, farthest_p, parents, children, relays_number);
     //start from the farthest point and find the depth
-    long depth = propagate(farthest, -1, farthest_p);
+    long depth = propagate(farthest, -1, farthest_p, parents, children, relays_number);
     long fastest_propagation = depth / 2;
     printf("\nFastest propagation: %ld", fastest_propagation);
     return 0;
