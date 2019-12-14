@@ -98,5 +98,5 @@ int main (int argc, char* argv[]) {
     int depth = propagate(farthest, NULL, farthest_p);
     int fastest_propagation = depth / 2;
     printf("\nFastest propagation: %d", fastest_propagation);
-    return 0;
+    return fastest_propagation;
 }
