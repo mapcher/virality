@@ -1,18 +1,19 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-int *parents;
-int *children;
-int relays_number;
+long *parents;
+long *children;
+long relays_number;
 
-/* int propagate(int current_point, int previous_point, int *farthest_p)
+/* long propagate(long current_point, long previous_point, long *farthest_p)
    returns maximum depth from the current point,
    sets farthest point by use of a pointer, because in C I can return only one primitive type.
    Alternatively I could make an array with two values (depth and farthest_point) and return the pointer to it...*/
-int propagate(int current_point, int previous_point, int *farthest_p) {
-    int current_children[relays_number];
-    int current_children_number=0;
-    for (int i=0; i<relays_number; i++) {
+long propagate(long current_point, long previous_point, long *farthest_p) {
+    long *current_children = NULL;
+    current_children = (long*) malloc(relays_number*sizeof(long));
+    long current_children_number=0;
+    for (long i=0; i<relays_number; i++) {
         if (parents[i]==current_point) {
             if (children[i]!=previous_point) {
                 current_children[current_children_number]=children[i];
@@ -25,16 +26,17 @@ int propagate(int current_point, int previous_point, int *farthest_p) {
             }
         }
     }
-    int max_depth=1;
-    int farthest_point_from_this=current_point;
-    for (int i = 0; i<current_children_number; i++){
+    long max_depth=1;
+    long farthest_point_from_this=current_point;
+    for (long i = 0; i<current_children_number; i++){
             farthest_point_from_this=current_children[i];
-            int child_depth=propagate(current_children[i],current_point,&farthest_point_from_this);
+            long child_depth=propagate(current_children[i],current_point,&farthest_point_from_this);
             if (child_depth>=max_depth){
                 max_depth=child_depth+1;
                 *farthest_p=farthest_point_from_this;
             }
     }
+    free(current_children);
     return max_depth;
 }
 
@@ -62,26 +64,26 @@ int main (int argc, char* argv[]) {
 		printf("invalid line 1");
 		return 0;
     }
-    relays_number = atoi(pch);
-    printf("relays_number: %d", relays_number);
-    int parents_[relays_number];
-    int children_[relays_number];
+    relays_number = atol(pch);
+    printf("relays_number: %ld", relays_number);
+    long parents_[relays_number];
+    long children_[relays_number];
     parents=parents_;
     children=children_;
-    int index = 0;
+    long index = 0;
 	while(fgets(result_string, sizeof(result_string), file)) {
-        int pch = strtok(result_string, " ");
+        pch = strtok(result_string, " ");
         if (pch == NULL) {
-            printf("invalid parameter 1 at line %d", index+1);
+            printf("invalid parameter 1 at line %ld", index+1);
             return 0;
         }
-        int parent = atoi(pch);
+        long parent = atol(pch);
         pch = strtok (NULL, " ");
         if (pch == NULL) {
-            printf("invalid parameter 2 at line %d", index+1);
+            printf("invalid parameter 2 at line %ld", index+1);
             return 0;
         }
-        int child = atoi(pch);
+        long child = atol(pch);
         parents[index] = parent;
         children[index] = child;
         index++;
@@ -91,12 +93,12 @@ int main (int argc, char* argv[]) {
 	 Finding the viral potential
     **************************************************************************/
     //start from any point (for instance 0) and find the farthest point
-    int farthest=parents[0];
-    int *farthest_p=&farthest;
-    propagate(parents[0], NULL, farthest_p);
+    long farthest=parents[0];
+    long *farthest_p=&farthest;
+    propagate(parents[0], -1, farthest_p);
     //start from the farthest point and find the depth
-    int depth = propagate(farthest, NULL, farthest_p);
-    int fastest_propagation = depth / 2;
-    printf("\nFastest propagation: %d", fastest_propagation);
-    return fastest_propagation;
+    long depth = propagate(farthest, -1, farthest_p);
+    long fastest_propagation = depth / 2;
+    printf("\nFastest propagation: %ld", fastest_propagation);
+    return 0;
 }
