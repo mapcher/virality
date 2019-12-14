@@ -82,7 +82,6 @@ int main (int argc, char* argv[]) {
             return 0;
         }
         int child = atoi(pch);
-        //printf("\n%d. %d - %d", index, parent, child);
         parents[index] = parent;
         children[index] = child;
         index++;
@@ -91,18 +90,12 @@ int main (int argc, char* argv[]) {
 	/*************************************************************************
 	 Finding the viral potential
     **************************************************************************/
-    //start from any point and find the farthest point
-    int starting_point = parents[0];
-    int no_point = -1;
-    int farthest;
-    int *farthest_p;
-    farthest_p=&farthest;
-    *farthest_p = starting_point;
-    int depth=propagate(starting_point, no_point, farthest_p);
+    //start from any point (for instance 0) and find the farthest point
+    int farthest=parents[0];
+    int *farthest_p=&farthest;
+    propagate(parents[0], NULL, farthest_p);
     //start from the farthest point and find the depth
-    int new_starting_point = *farthest_p;
-    depth = propagate(new_starting_point, no_point, farthest_p);
-
+    int depth = propagate(farthest, NULL, farthest_p);
     int fastest_propagation = depth / 2;
     printf("\nFastest propagation: %d", fastest_propagation);
     return 0;
