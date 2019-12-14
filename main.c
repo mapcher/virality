@@ -10,9 +10,6 @@ int relays_number;
    sets farthest point by use of a pointer, because in C I can return only one primitive type.
    Alternatively I could make an array with two values (depth and farthest_point) and return the pointer to it...*/
 int propagate(int current_point, int previous_point, int *farthest_p) {
-    printf("\n> Enter the function with parameters:");
-    printf("\ncurrent_point = %d, previous_point = %d, *farthest_p = %d", current_point, previous_point, *farthest_p);
-
     int current_children[relays_number];
     int current_children_number=0;
     for (int i=0; i<relays_number; i++) {
@@ -28,22 +25,16 @@ int propagate(int current_point, int previous_point, int *farthest_p) {
             }
         }
     }
-    printf("\ncurrent_children_number= %d", current_children_number);
     int max_depth=1;
     int farthest_point_from_this=current_point;
     for (int i = 0; i<current_children_number; i++){
-            printf("\nCalling child %d",i);
             farthest_point_from_this=current_children[i];
             int child_depth=propagate(current_children[i],current_point,&farthest_point_from_this);
-            printf("\nchild_depth=%d, max_depth=%d, farthest_point_from_this=%d",child_depth, max_depth, farthest_point_from_this);
             if (child_depth>=max_depth){
                 max_depth=child_depth+1;
                 *farthest_p=farthest_point_from_this;
-                printf("\n***********Updated: max_depth=%d, *farthest_p=%d",child_depth, max_depth, *farthest_p);
             }
     }
-    printf("\n< Exit the function with parameter");
-    printf("\n*farthest_p = %d\n, returned value = %d",*farthest_p,max_depth);
     return max_depth;
 }
 
@@ -91,7 +82,7 @@ int main (int argc, char* argv[]) {
             return 0;
         }
         int child = atoi(pch);
-        printf("\n%d. %d - %d", index, parent, child);
+        //printf("\n%d. %d - %d", index, parent, child);
         parents[index] = parent;
         children[index] = child;
         index++;
@@ -108,7 +99,6 @@ int main (int argc, char* argv[]) {
     fatherst_p=&fatherst;
     *fatherst_p = starting_point;
     int depth=propagate(starting_point, no_point, fatherst_p);
-    printf("depth = %d, *farthest_p = %d",depth,*fatherst_p);
     //start from the farthest point and find the depth
     int new_starting_point = *fatherst_p;
     depth = propagate(new_starting_point, no_point, fatherst_p);
