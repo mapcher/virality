@@ -7,31 +7,30 @@
    sets farthest point by use of a pointer, because in C I can return only one value of a primitive type.
    Alternatively I could make an array with two values (depth and farthest_point) and return the pointer to it...*/
 long propagate(long current_point, long previous_point, long *farthest_p, long *parents, long *children, long relays_number) {
-    long *current_children = NULL;
-    current_children = (long*) malloc(relays_number*sizeof(long));
+    long *current_children = (long*) malloc(relays_number*sizeof(long));
     long current_children_number=0;
-    for (long i=0; i<relays_number; i++) {
-        if (parents[i]==current_point) {
-            if (children[i]!=previous_point) {
-                current_children[current_children_number]=children[i];
+    for (long i = 0; i < relays_number; i++) {
+        if (parents[i] == current_point) {
+            if (children[i] != previous_point) {
+                current_children[current_children_number] = children[i];
                 current_children_number++;
             }
-        } else if (children[i]==current_point){
-            if (parents[i]!=previous_point) {
-                current_children[current_children_number]=parents[i];
+        } else if (children[i] == current_point) {
+            if (parents[i] != previous_point) {
+                current_children[current_children_number] = parents[i];
                 current_children_number++;
             }
         }
     }
-    long max_depth=1;
-    long farthest_point_from_this=current_point;
-    for (long i = 0; i<current_children_number; i++){
-            farthest_point_from_this=current_children[i];
-            long child_depth=propagate(current_children[i],current_point,&farthest_point_from_this, parents, children, relays_number);
-            if (child_depth>=max_depth){
-                max_depth=child_depth+1;
-                *farthest_p=farthest_point_from_this;
-            }
+    long max_depth = 1;
+    long farthest_point_from_this = current_point;
+    for (long i = 0; i < current_children_number; i++) {
+        farthest_point_from_this = current_children[i];
+        long child_depth = propagate(current_children[i], current_point, &farthest_point_from_this, parents, children, relays_number);
+        if (child_depth >= max_depth) {
+            max_depth = child_depth + 1;
+            *farthest_p = farthest_point_from_this;
+        }
     }
     free(current_children);
     return max_depth;
@@ -52,31 +51,31 @@ int main (int argc, char* argv[]) {
 	file = fopen(fname, "r");
 	if(file == NULL) {
 		printf("can't open file %s'", fname);
-		return 0;
+		return 1;
 	}
     char *pch;
 	fgets(result_string, sizeof(result_string), file);
-    pch = strtok (result_string, " ");
+    pch = strtok(result_string, " ");
     if (pch == NULL) {
 		printf("invalid line 1");
-		return 0;
+		return 1;
     }
     long relays_number = atol(pch);
     printf("relays_number: %ld", relays_number);
     long parents[relays_number];
     long children[relays_number];
     long index = 0;
-	while(fgets(result_string, sizeof(result_string), file)) {
+	while (fgets(result_string, sizeof(result_string), file)) {
         pch = strtok(result_string, " ");
         if (pch == NULL) {
-            printf("invalid parameter 1 at line %ld", index+1);
-            return 0;
+            printf("invalid parameter 1 at line %ld", index + 1);
+            return 1;
         }
         long parent = atol(pch);
-        pch = strtok (NULL, " ");
+        pch = strtok(NULL, " ");
         if (pch == NULL) {
-            printf("invalid parameter 2 at line %ld", index+1);
-            return 0;
+            printf("invalid parameter 2 at line %ld", index + 1);
+            return 1;
         }
         long child = atol(pch);
         parents[index] = parent;
@@ -88,8 +87,8 @@ int main (int argc, char* argv[]) {
 	 Finding the viral potential
     **************************************************************************/
     //start from any point (for instance 0) and find the farthest point
-    long farthest=parents[0];
-    long *farthest_p=&farthest;
+    long farthest = parents[0];
+    long *farthest_p = &farthest;
     propagate(parents[0], -1, farthest_p, parents, children, relays_number);
     //start from the farthest point and find the depth
     long depth = propagate(farthest, -1, farthest_p, parents, children, relays_number);
