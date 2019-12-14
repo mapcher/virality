@@ -55,8 +55,8 @@ int main (int argc, char* argv[]) {
      Reading data from file
     ************************************************************/
     if (argc < 2) {
-        printf("no path argument");
-		return 0;
+        printf("No path argument. Example: virality.exe dataset.txt");
+		return 1;
     }
     printf("%s %s\n", argv[0], argv[1]);
 	char *fname = argv[1];
@@ -64,32 +64,32 @@ int main (int argc, char* argv[]) {
 	FILE *file;
 	file = fopen(fname, "r");
 	if(file == NULL) {
-		printf("can't open file %s'", fname);
-		return 1;
+		printf("Can't open file %s'", fname);
+		return 2;
 	}
     char *pch;
 	fgets(result_string, sizeof(result_string), file);
     pch = strtok(result_string, " ");
     if (pch == NULL) {
-		printf("invalid line 1");
-		return 1;
+		printf("Invalid line 1. Number required.");
+		return 3;
     }
     long relays_number = atol(pch);
-    printf("relays_number: %ld\n", relays_number);
+    printf("Relays number: %ld\n", relays_number);
     long parents[relays_number];
     long children[relays_number];
     long index = 0;
 	while (fgets(result_string, sizeof(result_string), file)) {
         pch = strtok(result_string, " ");
         if (pch == NULL) {
-            printf("invalid parameter 1 at line %ld", index + 1);
-            return 1;
+            printf("invalid parameter 1 at line %ld. Two space separated numbers required.", index + 1);
+            return 4;
         }
         long parent = atol(pch);
         pch = strtok(NULL, " ");
         if (pch == NULL) {
-            printf("invalid parameter 2 at line %ld", index + 1);
-            return 1;
+            printf("invalid parameter 2 at line %ld. Two space separated numbers required.", index + 1);
+            return 5;
         }
         long child = atol(pch);
         parents[index] = parent;
@@ -118,7 +118,7 @@ int main (int argc, char* argv[]) {
                            parents,
                            children,
                            relays_number);
-    // The vantage point is in the middle of the longest line
+    // The vantage point is in the middle of the longest route
     long fastest_propagation = depth / 2;
     printf("\nFastest propagation: %ld", fastest_propagation);
     return 0;
