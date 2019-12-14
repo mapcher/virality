@@ -2,38 +2,52 @@
 #include <string.h>
 #include <stdlib.h>
 
-/* long propagate(long current_point, long previous_point, long *farthest_p, long *parents, long *children, long relays_number)
+/****************************************************************
+   Function propagate(...) is called recursively,
    returns maximum depth from the current point,
-   sets farthest point by use of a pointer, because in C I can return only one value of a primitive type.
-   Alternatively I could make an array with two values (depth and farthest_point) and return the pointer to it...*/
-long propagate(long current_point, long previous_point, long *farthest_p, long *parents, long *children, long relays_number) {
-    long *current_children = (long*) malloc(relays_number*sizeof(long));
-    long current_children_number=0;
+   sets farthest point by use of a pointer parameter,
+   because in C I can return only one value of a primitive type.
+   Alternatively I could make an array with two values
+   (depth and farthest_point) and return the pointer to it...
+*****************************************************************/
+long propagate(long current_point,
+               long previous_point, //where we come here from, don't go back
+               long *farthest_p,    //parameter for returning the deepest point
+               long *parents,       //the first column in the input file
+               long *children,      //the second column in the input file
+               long relays_number) {
+    long *neighbors = (long*) malloc(relays_number*sizeof(long));
+    long neighbors_number=0;
     for (long i = 0; i < relays_number; i++) {
         if (parents[i] == current_point) {
             if (children[i] != previous_point) {
-                current_children[current_children_number] = children[i];
-                current_children_number++;
+                neighbors[neighbors_number] = children[i];
+                neighbors_number++;
             }
         } else if (children[i] == current_point) {
             if (parents[i] != previous_point) {
-                current_children[current_children_number] = parents[i];
-                current_children_number++;
+                neighbors[neighbors_number] = parents[i];
+                neighbors_number++;
             }
         }
     }
-    long max_depth = 1;
+    long depth_record = 1; //current record of depth, will grow further
     long farthest_point_from_this = current_point;
-    for (long i = 0; i < current_children_number; i++) {
-        farthest_point_from_this = current_children[i];
-        long child_depth = propagate(current_children[i], current_point, &farthest_point_from_this, parents, children, relays_number);
-        if (child_depth >= max_depth) {
-            max_depth = child_depth + 1;
+    for (long i = 0; i < neighbors_number; i++) {
+        farthest_point_from_this = neighbors[i];
+        long child_depth = propagate(neighbors[i],  //recursion for each neighbor
+                                     current_point,           //"previous" for the neighbor
+                                     &farthest_point_from_this,//returning parameter
+                                     parents,
+                                     children,
+                                     relays_number);
+        if (child_depth >= depth_record) { //record is reached and may be beaten
+            depth_record = child_depth + 1;
             *farthest_p = farthest_point_from_this;
         }
     }
-    free(current_children);
-    return max_depth;
+    free(neighbors);
+    return depth_record;
 }
 
 int main (int argc, char* argv[]) {
@@ -61,7 +75,7 @@ int main (int argc, char* argv[]) {
 		return 1;
     }
     long relays_number = atol(pch);
-    printf("relays_number: %ld", relays_number);
+    printf("relays_number: %ld\n", relays_number);
     long parents[relays_number];
     long children[relays_number];
     long index = 0;
@@ -83,15 +97,28 @@ int main (int argc, char* argv[]) {
         index++;
 	}
 	fclose(file);
+    printf("Read rows: %ld", index);
+
 	/*************************************************************************
 	 Finding the viral potential
     **************************************************************************/
-    //start from any point (for instance 0) and find the farthest point
+    // Let's find the farthest point
     long farthest = parents[0];
     long *farthest_p = &farthest;
-    propagate(parents[0], -1, farthest_p, parents, children, relays_number);
-    //start from the farthest point and find the depth
-    long depth = propagate(farthest, -1, farthest_p, parents, children, relays_number);
+    propagate(parents[0], // start from any point (for instance 0)
+              -1,         // the first point has no "previous"
+              farthest_p, // returning parameter, will be used later
+              parents,
+              children,
+              relays_number);
+    // Now find the biggest distance on the net
+    long depth = propagate(farthest,  // start from the previously found farthest point
+                           -1,        // the first point has no "previous"
+                           farthest_p,// now plays no role
+                           parents,
+                           children,
+                           relays_number);
+    // The vantage point is in the middle of the longest line
     long fastest_propagation = depth / 2;
     printf("\nFastest propagation: %ld", fastest_propagation);
     return 0;
