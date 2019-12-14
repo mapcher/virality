@@ -94,14 +94,14 @@ int main (int argc, char* argv[]) {
     //start from any point and find the farthest point
     int starting_point = parents[0];
     int no_point = -1;
-    int fatherst;
-    int *fatherst_p;
-    fatherst_p=&fatherst;
-    *fatherst_p = starting_point;
-    int depth=propagate(starting_point, no_point, fatherst_p);
+    int farthest;
+    int *farthest_p;
+    farthest_p=&farthest;
+    *farthest_p = starting_point;
+    int depth=propagate(starting_point, no_point, farthest_p);
     //start from the farthest point and find the depth
-    int new_starting_point = *fatherst_p;
-    depth = propagate(new_starting_point, no_point, fatherst_p);
+    int new_starting_point = *farthest_p;
+    depth = propagate(new_starting_point, no_point, farthest_p);
 
     int fastest_propagation = depth / 2;
     printf("\nFastest propagation: %d", fastest_propagation);
