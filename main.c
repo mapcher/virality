@@ -9,47 +9,38 @@ struct propagation_result {
 
 /****************************************************************
    Function propagate(...) is called recursively,
-   returns maximum depth from the current point
-   and the deepest point
+   returns maximum depth
+   and the farthest point from the current point
 *****************************************************************/
 struct propagation_result propagate(long current_point,
                                     long previous_point, //where we come here from, don't go back
                                     long *parents,       //the first column in the input file
                                     long *children,      //the second column in the input file
                                     long relays_number) {
-    long *neighbors = (long*) malloc(relays_number * sizeof(long));
-    long neighbors_number = 0;
-    for (long i = 0; i < relays_number; i++) {
-        if (parents[i] == current_point) {
-            if (children[i] != previous_point) {
-                neighbors[neighbors_number] = children[i];
-                neighbors_number++;
-            }
-        } else if (children[i] == current_point) {
-            if (parents[i] != previous_point) {
-                neighbors[neighbors_number] = parents[i];
-                neighbors_number++;
-            }
-        }
-    }
-    long depth_record = 1;
+    long depth = 1;
     long farthest_point = current_point;
-    for (long i = 0; i < neighbors_number; i++) {
-        struct propagation_result child_result = propagate(neighbors[i],  //recursion for each neighbor
-                                                           current_point, //"previous" for the neighbor
-                                                           parents,
-                                                           children,
-                                                           relays_number);
-        long child_depth = child_result.depth;
-        if (child_depth >= depth_record) { //record is reached and may be beaten
-            depth_record = child_depth + 1;
-            farthest_point = child_result.farthest_point;
+
+    long neighbor;
+    for (long i = 0; i < relays_number; i++) {
+        if (parents[i] != current_point && children[i] != current_point) continue;
+        if (parents[i] == previous_point || children[i] == previous_point) continue;
+        if (parents[i] == current_point) {
+            neighbor = children[i];
+        } else { // (children[i] == current_point)
+            neighbor = parents[i];
+        }
+        struct propagation_result neighbor_result = propagate(neighbor,  //recursion for each neighbor
+                                                              current_point, //"previous" for the neighbor
+                                                              parents,
+                                                              children,
+                                                              relays_number);
+        long child_depth = neighbor_result.depth;
+        if (child_depth >= depth) {
+            depth = child_depth + 1;
+            farthest_point = neighbor_result.farthest_point;
         }
     }
-    free(neighbors);
-    struct propagation_result result;
-    result.depth = depth_record;
-    result.farthest_point = farthest_point;
+    struct propagation_result result = {depth, farthest_point};
     return result;
 }
 

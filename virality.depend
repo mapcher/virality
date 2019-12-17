@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1576615395 source:c:\geda\virality\main.c
+1576619540 source:c:\geda\virality\main.c
 	<stdio.h>
 	<string.h>
 	<stdlib.h>
