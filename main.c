@@ -2,22 +2,23 @@
 #include <string.h>
 #include <stdlib.h>
 
+struct propagation_result {
+    long depth;
+    long farthest_point;
+};
+
 /****************************************************************
    Function propagate(...) is called recursively,
-   returns maximum depth from the current point,
-   sets farthest point by use of a pointer parameter,
-   because in C I can return only one value of a primitive type.
-   Alternatively I could make an array with two values
-   (depth and farthest_point) and return the pointer to it...
+   returns maximum depth from the current point
+   and the deepest point
 *****************************************************************/
-long propagate(long current_point,
-               long previous_point, //where we come here from, don't go back
-               long *farthest_p,    //parameter for returning the deepest point
-               long *parents,       //the first column in the input file
-               long *children,      //the second column in the input file
-               long relays_number) {
-    long *neighbors = (long*) malloc(relays_number*sizeof(long));
-    long neighbors_number=0;
+struct propagation_result propagate(long current_point,
+                                    long previous_point, //where we come here from, don't go back
+                                    long *parents,       //the first column in the input file
+                                    long *children,      //the second column in the input file
+                                    long relays_number) {
+    long *neighbors = (long*) malloc(relays_number * sizeof(long));
+    long neighbors_number = 0;
     for (long i = 0; i < relays_number; i++) {
         if (parents[i] == current_point) {
             if (children[i] != previous_point) {
@@ -31,23 +32,25 @@ long propagate(long current_point,
             }
         }
     }
-    long depth_record = 1; //current record of depth, will grow further
-    long farthest_point_from_this = current_point;
+    long depth_record = 1;
+    long farthest_point = current_point;
     for (long i = 0; i < neighbors_number; i++) {
-        farthest_point_from_this = neighbors[i];
-        long child_depth = propagate(neighbors[i],  //recursion for each neighbor
-                                     current_point,           //"previous" for the neighbor
-                                     &farthest_point_from_this,//returning parameter
-                                     parents,
-                                     children,
-                                     relays_number);
+        struct propagation_result child_result = propagate(neighbors[i],  //recursion for each neighbor
+                                                           current_point, //"previous" for the neighbor
+                                                           parents,
+                                                           children,
+                                                           relays_number);
+        long child_depth = child_result.depth;
         if (child_depth >= depth_record) { //record is reached and may be beaten
             depth_record = child_depth + 1;
-            *farthest_p = farthest_point_from_this;
+            farthest_point = child_result.farthest_point;
         }
     }
     free(neighbors);
-    return depth_record;
+    struct propagation_result result;
+    result.depth = depth_record;
+    result.farthest_point = farthest_point;
+    return result;
 }
 
 int main (int argc, char* argv[]) {
@@ -102,23 +105,24 @@ int main (int argc, char* argv[]) {
 	/*************************************************************************
 	 Finding the viral potential
     **************************************************************************/
+    long previous_point = -1;
     // Let's find the farthest point
-    long farthest = parents[0];
-    long *farthest_p = &farthest;
-    propagate(parents[0], // start from any point (for instance 0)
-              -1,         // the first point has no "previous"
-              farthest_p, // returning parameter, will be used later
-              parents,
-              children,
-              relays_number);
+    // Start from any point (for instance from the first)
+    struct propagation_result first_propagation_result = propagate(parents[0],
+                                                                   previous_point,
+                                                                   parents,
+                                                                   children,
+                                                                   relays_number);
     // Now find the biggest distance on the net
-    long depth = propagate(farthest,  // start from the previously found farthest point
-                           -1,        // the first point has no "previous"
-                           farthest_p,// now plays no role
-                           parents,
-                           children,
-                           relays_number);
+    // Start from the recently found farthest point
+    printf("\nfirst_propagation_result.farthest_point = %ld",first_propagation_result.farthest_point);
+    struct propagation_result second_propagation_result = propagate(first_propagation_result.farthest_point,
+                                                                    previous_point,
+                                                                    parents,
+                                                                    children,
+                                                                    relays_number);
     // The vantage point is in the middle of the longest route
+    long depth = second_propagation_result.depth;
     long fastest_propagation = depth / 2;
     printf("\nFastest propagation: %ld", fastest_propagation);
     return 0;

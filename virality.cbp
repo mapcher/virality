@@ -21,7 +21,7 @@
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
-				<Option parameters="test09.txt" />
+				<Option parameters="test07.txt" />
 				<Compiler>
 					<Add option="-O2" />
 				</Compiler>
